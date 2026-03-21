@@ -1,0 +1,92 @@
+const express = require('express');
+const bcrypt  = require('bcryptjs');
+const jwt     = require('jsonwebtoken');
+const pool    = require('../config/db');
+const { auth } = require('../middleware/auth');
+const router  = express.Router();
+
+// POST /api/auth/register
+router.post('/register', async (req, res) => {
+  const { name, email, password, role = 'viewer' } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
+
+  try {
+    const [existing] = await pool.execute('SELECT user_id FROM users WHERE email = ?', [email]);
+    if (existing.length)
+      return res.status(409).json({ success: false, message: 'Email already registered' });
+
+    const hash  = await bcrypt.hash(password, 10);
+    const safeRole = ['admin','operator','viewer'].includes(role) ? role : 'viewer';
+    const [result] = await pool.execute(
+      'INSERT INTO users (name, email, password_hash, role) VALUES (?,?,?,?)',
+      [name, email, hash, safeRole]
+    );
+    const token = jwt.sign(
+      { user_id: result.insertId, name, email, role: safeRole },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+    res.status(201).json({ success: true, token, user: { user_id: result.insertId, name, email, role: safeRole } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/auth/login
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ success: false, message: 'Email and password required' });
+
+  try {
+    const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+    if (!rows.length)
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+
+    const user = rows[0];
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match)
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+
+    const token = jwt.sign(
+      { user_id: user.user_id, name: user.name, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+    res.json({
+      success: true, token,
+      user: { user_id: user.user_id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/auth/me  (protected)
+router.get('/me', auth, async (req, res) => {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT user_id, name, email, role, created_at FROM users WHERE user_id = ?',
+      [req.user.user_id]
+    );
+    if (!rows.length) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user: rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/auth/users  (admin only)
+router.get('/users', auth, async (req, res) => {
+  if (req.user.role !== 'admin')
+    return res.status(403).json({ success: false, message: 'Admin only' });
+  try {
+    const [rows] = await pool.execute('SELECT user_id, name, email, role, created_at FROM users');
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+module.exports = router;
