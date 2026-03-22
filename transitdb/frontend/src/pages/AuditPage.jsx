@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import { ClipboardList, Plus, Pencil, Trash2 } from 'lucide-react';
 import api from '../api/axios';
 
 const ACTION_STYLE = {
-  INSERT: { color: 'var(--green)',  bg: 'var(--green-bg)',  icon: '➕' },
-  UPDATE: { color: 'var(--amber)',  bg: 'var(--amber-bg)',  icon: '✏️' },
-  DELETE: { color: 'var(--red)',    bg: 'var(--red-bg)',    icon: '🗑️' },
+  INSERT: { color: 'var(--green)', bg: 'var(--green-bg)',  icon: <Plus size={12}/> },
+  UPDATE: { color: 'var(--amber)', bg: 'var(--amber-bg)',  icon: <Pencil size={12}/> },
+  DELETE: { color: 'var(--red)',   bg: 'var(--red-bg)',    icon: <Trash2 size={12}/> },
 };
 
 export default function AuditPage() {
@@ -16,7 +17,7 @@ export default function AuditPage() {
   useEffect(() => {
     api.get('/dashboard/audit?limit=200')
       .then(r => setLogs(r.data.data))
-      .catch(console.error)
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -29,7 +30,9 @@ export default function AuditPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 800 }}>📋 Audit Log</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ClipboardList size={22}/> Audit Log
+        </h1>
         <p style={{ fontSize: '.8rem', color: 'var(--text2)', marginTop: '.2rem' }}>Every INSERT, UPDATE, DELETE tracked in MySQL with user, timestamp, and changes</p>
       </div>
 
@@ -46,7 +49,9 @@ export default function AuditPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text2)' }}>⏳ Loading audit log…</div>
+        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text2)' }}>
+          Loading audit log…
+        </div>
       ) : (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r)', boxShadow: 'var(--sh2)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -61,7 +66,7 @@ export default function AuditPage() {
               {filtered.map(l => {
                 const s = ACTION_STYLE[l.action] || {};
                 let changes = null;
-                if (l.changes) { try { changes = JSON.parse(l.changes); } catch {} }
+                if (l.changes) { try { changes = JSON.parse(l.changes); } catch (_e) { changes = null; } }
                 return (
                   <tr key={l.log_id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '9px 14px', fontFamily: "'Fira Code',monospace", fontSize: '.74rem', color: 'var(--amber)', fontWeight: 600 }}>{l.log_id}</td>
