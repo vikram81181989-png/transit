@@ -6,10 +6,9 @@ USE transitdb;
 
 -- Default admin user (password: Admin@123)
 INSERT INTO users (name, email, password_hash, role) VALUES
-('Admin User',    'admin@transitdb.com',    '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('Operator One',  'operator@transitdb.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'operator'),
-('Viewer User',   'viewer@transitdb.com',   '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'viewer');
-
+('Admin User', 'admin@transitdb.com', 'temp_password', 'admin'),
+('Operator One', 'operator@transitdb.com', 'temp_password', 'operator'),
+('Viewer User', 'viewer@transitdb.com', 'temp_password', 'viewer');
 -- Routes
 INSERT INTO routes (source, destination, distance_km, duration_hrs, status) VALUES
 ('Hyderabad',  'Bangalore',    570.00,  9.5,  'active'),
