@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Bus, AlertTriangle, LogIn, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
@@ -17,8 +18,8 @@ export default function Login() {
     try {
       await login(form.email, form.password);
       navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+    } catch (_err) {
+      setError('Invalid email or password. Please try again.');
     } finally { setLoading(false); }
   };
 
@@ -27,7 +28,9 @@ export default function Login() {
       <div style={{ width: '100%', maxWidth: '420px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ width: '52px', height: '52px', background: 'var(--accent)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', margin: '0 auto 1rem', boxShadow: '0 4px 16px rgba(37,99,235,.35)' }}>🚌</div>
+          <div style={{ width: '52px', height: '52px', background: 'var(--accent)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', boxShadow: '0 4px 16px rgba(37,99,235,.35)' }}>
+            <Bus size={26} color="#fff"/>
+          </div>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '.3rem' }}>Welcome to <span style={{ color: 'var(--accent)' }}>TransitDB</span></h1>
           <p style={{ fontSize: '.85rem', color: 'var(--text2)' }}>Transport Management System</p>
         </div>
@@ -36,8 +39,8 @@ export default function Login() {
           <h2 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.25rem' }}>Sign In</h2>
 
           {error && (
-            <div style={{ background: 'var(--red-bg)', border: '1px solid #fca5a5', borderRadius: 'var(--r2)', padding: '10px 14px', marginBottom: '1rem', fontSize: '.82rem', color: 'var(--red)', fontWeight: 500 }}>
-              ⚠️ {error}
+            <div style={{ background: 'var(--red-bg)', border: '1px solid #fca5a5', borderRadius: 'var(--r2)', padding: '10px 14px', marginBottom: '1rem', fontSize: '.82rem', color: 'var(--red)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <AlertTriangle size={14}/> {error}
             </div>
           )}
 
@@ -60,8 +63,8 @@ export default function Login() {
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
             </div>
-            <button type="submit" disabled={loading} className="btn primary" style={{ width: '100%', justifyContent: 'center', padding: '11px', fontSize: '.9rem', marginTop: '.3rem' }}>
-              {loading ? '⏳ Signing in…' : '→ Sign In'}
+            <button type="submit" disabled={loading} className="btn primary" style={{ width: '100%', justifyContent: 'center', padding: '11px', fontSize: '.9rem', marginTop: '.3rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {loading ? <><Loader size={14}/> Signing in…</> : <><LogIn size={14}/> Sign In</>}
             </button>
           </form>
 
