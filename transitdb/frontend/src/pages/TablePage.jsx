@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import { RefreshCw, Download, Plus, Eye } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { TABLE_CONFIG } from '../config/tables';
@@ -18,7 +20,7 @@ export default function TablePage({ table }) {
   const [rows,     setRows]     = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState('');
-  const [modal,    setModal]    = useState(null); // null | 'add' | 'edit'
+  const [modal,    setModal]    = useState(null);
   const [form,     setForm]     = useState({});
   const [saving,   setSaving]   = useState(false);
   const [deleting, setDeleting] = useState(null);
@@ -30,10 +32,10 @@ export default function TablePage({ table }) {
     try {
       const r = await api.get(`/${table}`);
       setRows(r.data.data);
-    } catch (e) {
-      toast(e.response?.data?.message || 'Failed to load data', 'err');
+    } catch (_e) {
+      toast('Failed to load data', 'err');
     } finally { setLoading(false); }
-  }, [table]);
+  }, [table, toast]);
 
   useEffect(() => { load(); setSearch(''); }, [table, load]);
 
@@ -41,10 +43,7 @@ export default function TablePage({ table }) {
     Object.values(row).some(v => String(v ?? '').toLowerCase().includes(search.toLowerCase()))
   );
 
-  const openAdd = () => {
-    setForm({});
-    setModal('add');
-  };
+  const openAdd = () => { setForm({}); setModal('add'); };
 
   const openEdit = (row) => {
     const f = {};
@@ -58,15 +57,15 @@ export default function TablePage({ table }) {
     try {
       if (modal === 'add') {
         await api.post(`/${table}`, form);
-        toast(`New ${table.slice(0,-1)} added to MySQL ✅`, 'ok');
+        toast(`New ${table.slice(0,-1)} added`, 'ok');
       } else {
         await api.put(`/${table}/${modal.id}`, form);
-        toast(`${table.slice(0,-1)} #${modal.id} updated ✅`, 'ok');
+        toast(`${table.slice(0,-1)} #${modal.id} updated`, 'ok');
       }
       setModal(null);
       load();
-    } catch (e) {
-      toast(e.response?.data?.message || 'Save failed', 'err');
+    } catch (_e) {
+      toast('Save failed', 'err');
     } finally { setSaving(false); }
   };
 
@@ -75,10 +74,10 @@ export default function TablePage({ table }) {
     setDeleting(row[pkKey]);
     try {
       await api.delete(`/${table}/${row[pkKey]}`);
-      toast(`Record #${row[pkKey]} deleted from MySQL`, 'ok');
+      toast(`Record #${row[pkKey]} deleted`, 'ok');
       load();
-    } catch (e) {
-      toast(e.response?.data?.message || 'Delete failed', 'err');
+    } catch (_e) {
+      toast('Delete failed', 'err');
     } finally { setDeleting(null); }
   };
 
@@ -92,6 +91,9 @@ export default function TablePage({ table }) {
     a.click();
     toast(`Exported ${table}.csv`, 'ok');
   };
+
+  // suppress unused warning
+  void deleting;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -112,22 +114,32 @@ export default function TablePage({ table }) {
             style={{ padding: '8px 13px', background: 'var(--surface)', border: '1.5px solid var(--border)', borderRadius: 'var(--r2)', fontSize: '.85rem', color: 'var(--text)', outline: 'none', width: '200px', transition: 'border-color .2s' }}
             onFocus={e => e.target.style.borderColor = 'var(--accent)'}
             onBlur={e => e.target.style.borderColor = 'var(--border)'} />
-          <button className="btn" onClick={load} title="Reload from MySQL">↺</button>
-          <button className="btn" onClick={exportCSV}>⬇ CSV</button>
-          {canWrite && <button className="btn primary" onClick={openAdd}>+ Add Row</button>}
+          <button className="btn" onClick={load} title="Reload from MySQL">
+            <RefreshCw size={14}/>
+          </button>
+          <button className="btn" onClick={exportCSV} style={{display:'flex',alignItems:'center',gap:'5px'}}>
+            <Download size={14}/> CSV
+          </button>
+          {canWrite && (
+            <button className="btn primary" onClick={openAdd} style={{display:'flex',alignItems:'center',gap:'5px'}}>
+              <Plus size={14}/> Add Row
+            </button>
+          )}
         </div>
       </div>
 
       {/* Role notice */}
       {!canWrite && (
-        <div style={{ background: 'var(--amber-bg)', border: '1px solid #fde68a', borderRadius: 'var(--r2)', padding: '8px 14px', fontSize: '.8rem', color: 'var(--amber)', fontWeight: 500 }}>
-          👁 Viewer mode — read only. Ask an admin to make changes.
+        <div style={{ background: 'var(--amber-bg)', border: '1px solid #fde68a', borderRadius: 'var(--r2)', padding: '8px 14px', fontSize: '.8rem', color: 'var(--amber)', fontWeight: 500, display:'flex', alignItems:'center', gap:'6px' }}>
+          <Eye size={14}/> Viewer mode — read only. Ask an admin to make changes.
         </div>
       )}
 
       {/* Table */}
       {loading ? (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '4rem', textAlign: 'center', color: 'var(--text2)' }}>⏳ Loading from MySQL…</div>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '4rem', textAlign: 'center', color: 'var(--text2)' }}>
+          Loading from MySQL…
+        </div>
       ) : (
         <DataTable
           columns={config.columns}
@@ -143,11 +155,13 @@ export default function TablePage({ table }) {
       <Modal
         open={!!modal}
         onClose={() => setModal(null)}
-        title={modal === 'add' ? `➕ Add ${config.label.slice(0,-1)}` : `✏️ Edit ${config.label.slice(0,-1)} #${modal?.id}`}
+        title={modal === 'add'
+          ? `Add ${config.label.slice(0,-1)}`
+          : `Edit ${config.label.slice(0,-1)} #${modal?.id}`}
         footer={<>
           <button className="btn" onClick={() => setModal(null)}>Cancel</button>
           <button className="btn primary" onClick={handleSave} disabled={saving}>
-            {saving ? '⏳ Saving…' : modal === 'add' ? '→ Insert to MySQL' : '→ Update MySQL'}
+            {saving ? 'Saving…' : modal === 'add' ? 'Insert to MySQL' : 'Update MySQL'}
           </button>
         </>}>
         {config.fields.map(f => (
@@ -164,3 +178,7 @@ export default function TablePage({ table }) {
     </div>
   );
 }
+
+TablePage.propTypes = {
+  table: PropTypes.string.isRequired
+};
