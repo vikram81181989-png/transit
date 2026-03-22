@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 // ── Request logger (dev) ──
 app.use((req, _res, next) => {
   // ✅ SAFE - sanitize URL before logging
-  const safeUrl = req.url.replace(/[^\w\s\-\/\.\?\=\&]/gi, '');
+  const safeUrl = req.url.replaceAll(/[^\w\s\-\/\.\?\=\&]/g, '');
   console.log(`[${new Date().toISOString()}] ${req.method} ${safeUrl}`);
   next(); // ← THIS IS IMPORTANT!
 });

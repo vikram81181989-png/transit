@@ -40,7 +40,7 @@ router.get('/stats', auth, async (req, res) => {
 // GET /api/dashboard/audit  — audit log with user info
 router.get('/audit', auth, async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const limit = Math.min(Number.parseInt(req.query.limit, 10) || 50, 200);
     const [rows] = await pool.execute(
       `SELECT a.*, u.name as user_name, u.email
        FROM audit_log a LEFT JOIN users u ON a.user_id = u.user_id
