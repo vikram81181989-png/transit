@@ -28,8 +28,8 @@ router.post('/register', async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
     res.status(201).json({ success: true, token, user: { user_id: result.insertId, name, email, role: safeRole } });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Registration failed' });
   }
 });
 
@@ -58,8 +58,8 @@ router.post('/login', async (req, res) => {
       success: true, token,
       user: { user_id: user.user_id, name: user.name, email: user.email, role: user.role }
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Login failed' });
   }
 });
 
@@ -72,8 +72,8 @@ router.get('/me', auth, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ success: false, message: 'User not found' });
     res.json({ success: true, user: rows[0] });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch user' });
   }
 });
 
@@ -84,8 +84,8 @@ router.get('/users', auth, async (req, res) => {
   try {
     const [rows] = await pool.execute('SELECT user_id, name, email, role, created_at FROM users');
     res.json({ success: true, data: rows });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch users' });
   }
 });
 

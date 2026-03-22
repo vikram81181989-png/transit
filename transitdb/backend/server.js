@@ -10,10 +10,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // ── Request logger (dev) ──
 app.use((req, _res, next) => {
-  // ✅ SAFE - sanitize URL before logging
-  const safeUrl = req.url.replaceAll(/[^\w\s\-\/\.\?\=\&]/g, '');
-  console.log(`[${new Date().toISOString()}] ${req.method} ${safeUrl}`);
-  next(); // ← THIS IS IMPORTANT!
+  const safeUrl    = req.url.replaceAll(/[^\w\s\-\/\.\?\=\&]/g, '');
+  const safeMethod = req.method.replaceAll(/[^A-Z]/g, '');
+  console.log(`[${new Date().toISOString()}] ${safeMethod} ${safeUrl}`);
+  next();
 });
 
 // ── Routes ──
@@ -39,11 +39,11 @@ app.use((_req, res) => res.status(404).json({ success: false, message: 'Route no
 
 // ── Error handler ──
 app.use((err, _req, res, _next) => {
-  console.error(err.stack);
+  console.error('Internal error occurred');
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚌 TransitDB API running on http://localhost:${PORT}`);
+  console.log(`TransitDB API running on http://localhost:${PORT}`);
 });

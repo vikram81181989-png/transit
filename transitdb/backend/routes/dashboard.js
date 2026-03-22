@@ -4,7 +4,7 @@ const { auth } = require('../middleware/auth');
 const router  = express.Router();
 
 // GET /api/dashboard/stats
-router.get('/stats', auth, async (req, res) => {
+router.get('/stats', auth, async (_req, res) => {
   try {
     const queries = [
       pool.execute('SELECT COUNT(*) as count FROM routes'),
@@ -14,7 +14,7 @@ router.get('/stats', auth, async (req, res) => {
       pool.execute('SELECT COUNT(*) as count FROM bookings'),
       pool.execute('SELECT COUNT(*) as count FROM staff'),
       pool.execute("SELECT COUNT(*) as count FROM bookings WHERE status='confirmed'"),
-      pool.execute("SELECT COUNT(*) as count FROM routes   WHERE status='delayed'"),
+      pool.execute("SELECT COUNT(*) as count FROM routes WHERE status='delayed'"),
       pool.execute('SELECT COALESCE(SUM(amount),0) as total FROM bookings WHERE status="confirmed"'),
       pool.execute("SELECT COUNT(*) as count FROM vehicles WHERE status='active'"),
     ];
@@ -34,10 +34,12 @@ router.get('/stats', auth, async (req, res) => {
         activeVehicles:    results[9][0][0].count,
       }
     });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch stats' });
+  }
 });
 
-// GET /api/dashboard/audit  — audit log with user info
+// GET /api/dashboard/audit
 router.get('/audit', auth, async (req, res) => {
   try {
     const limit = Math.min(Number.parseInt(req.query.limit, 10) || 50, 200);
@@ -48,11 +50,13 @@ router.get('/audit', auth, async (req, res) => {
       [limit]
     );
     res.json({ success: true, data: rows });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch audit log' });
+  }
 });
 
 // GET /api/dashboard/recent-bookings
-router.get('/recent-bookings', auth, async (req, res) => {
+router.get('/recent-bookings', auth, async (_req, res) => {
   try {
     const [rows] = await pool.execute(
       `SELECT b.booking_id, p.name, r.source, r.destination, b.amount, b.status, b.booked_at
@@ -63,7 +67,9 @@ router.get('/recent-bookings', auth, async (req, res) => {
        ORDER BY b.booked_at DESC LIMIT 10`
     );
     res.json({ success: true, data: rows });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  } catch (_err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch recent bookings' });
+  }
 });
 
 module.exports = router;
