@@ -3,23 +3,18 @@ const pool      = require('../config/db');
 const { auth, requireRole } = require('../middleware/auth');
 const logAudit  = require('../middleware/audit');
 
-/**
- * Creates a full CRUD router for any table.
- * @param {string} table       - MySQL table name
- * @param {string} pk          - Primary key column name
- * @param {string[]} writeCols - Columns allowed in INSERT/UPDATE (excludes PK & timestamps)
- * @param {string|null} joinQuery - Optional SQL for GET all with JOINs
- */
 function crudRouter(table, pk, writeCols, joinQuery = null) {
   const router = express.Router();
 
   // GET all
-  router.get('/', auth, async (req, res) => {
+  router.get('/', auth, async (_req, res) => {
     try {
       const sql = joinQuery || `SELECT * FROM ${table} ORDER BY ${pk} DESC`;
       const [rows] = await pool.execute(sql);
       res.json({ success: true, data: rows, count: rows.length });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+    } catch (_err) {
+      res.status(500).json({ success: false, message: 'Failed to fetch records' });
+    }
   });
 
   // GET by ID
@@ -28,7 +23,9 @@ function crudRouter(table, pk, writeCols, joinQuery = null) {
       const [rows] = await pool.execute(`SELECT * FROM ${table} WHERE ${pk} = ?`, [req.params.id]);
       if (!rows.length) return res.status(404).json({ success: false, message: 'Record not found' });
       res.json({ success: true, data: rows[0] });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+    } catch (_err) {
+      res.status(500).json({ success: false, message: 'Failed to fetch record' });
+    }
   });
 
   // POST create
@@ -43,7 +40,9 @@ function crudRouter(table, pk, writeCols, joinQuery = null) {
       await logAudit(req.user.user_id, table, 'INSERT', result.insertId, body);
       const [newRow] = await pool.execute(`SELECT * FROM ${table} WHERE ${pk} = ?`, [result.insertId]);
       res.status(201).json({ success: true, data: newRow[0], message: 'Record created' });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+    } catch (_err) {
+      res.status(500).json({ success: false, message: 'Failed to create record' });
+    }
   });
 
   // PUT update
@@ -59,7 +58,9 @@ function crudRouter(table, pk, writeCols, joinQuery = null) {
       await logAudit(req.user.user_id, table, 'UPDATE', req.params.id, body);
       const [updated] = await pool.execute(`SELECT * FROM ${table} WHERE ${pk} = ?`, [req.params.id]);
       res.json({ success: true, data: updated[0], message: 'Record updated' });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+    } catch (_err) {
+      res.status(500).json({ success: false, message: 'Failed to update record' });
+    }
   });
 
   // DELETE
@@ -70,7 +71,9 @@ function crudRouter(table, pk, writeCols, joinQuery = null) {
       await pool.execute(`DELETE FROM ${table} WHERE ${pk} = ?`, [req.params.id]);
       await logAudit(req.user.user_id, table, 'DELETE', req.params.id, rows[0]);
       res.json({ success: true, message: 'Record deleted' });
-    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+    } catch (_err) {
+      res.status(500).json({ success: false, message: 'Failed to delete record' });
+    }
   });
 
   return router;
