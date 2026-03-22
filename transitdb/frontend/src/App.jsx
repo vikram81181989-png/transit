@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './index.css';
@@ -15,11 +16,19 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+PrivateRoute.propTypes = {
+  children: PropTypes.node.isRequired
+};
+
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   return user ? <Navigate to="/" replace /> : children;
 }
+
+PublicRoute.propTypes = {
+  children: PropTypes.node.isRequired
+};
 
 export default function App() {
   return (
