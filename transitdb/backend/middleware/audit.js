@@ -9,8 +9,8 @@ const logAudit = async (userId, tableName, action, recordId, changes = null) => 
       `INSERT INTO audit_log (user_id, table_name, action, record_id, changes) VALUES (?,?,?,?,?)`,
       [userId || null, tableName, action, recordId, changes ? JSON.stringify(changes) : null]
     );
-  } catch (err) {
-    console.error('Audit log error:', err.message);
+  } catch (_err) {
+    console.error('Audit log failed');
   }
 };
 
