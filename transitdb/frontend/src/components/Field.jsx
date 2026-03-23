@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 export default function Field({ label, type = 'text', value, onChange, options, required, hint, disabled }) {
   const inputStyle = {
     width: '100%', padding: '9px 12px',
@@ -34,3 +36,14 @@ export default function Field({ label, type = 'text', value, onChange, options, 
     </div>
   );
 }
+
+Field.propTypes = {
+  label:    PropTypes.string.isRequired,
+  type:     PropTypes.string,
+  value:    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onChange: PropTypes.func.isRequired,
+  options:  PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
+  required: PropTypes.bool,
+  hint:     PropTypes.string,
+  disabled: PropTypes.bool,
+};
