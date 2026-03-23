@@ -28,9 +28,10 @@ router.post('/register', async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
     res.status(201).json({ success: true, token, user: { user_id: result.insertId, name, email, role: safeRole } });
-  } catch (_err) {
-    res.status(500).json({ success: false, message: 'Registration failed' });
-  }
+  } catch (err) {
+  console.error("❌ REGISTER ERROR:", err);   // 👈 ADD THIS
+  res.status(500).json({ success: false, message: err.message });
+}
 });
 
 // POST /api/auth/login
