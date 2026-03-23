@@ -1,16 +1,20 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
+import {
+  LayoutDashboard, Map, Bus, Clock, Users,
+  Ticket, HardHat, ClipboardList, LogOut, Menu, Bus as BusIcon
+} from 'lucide-react';
 
 const NAV = [
-  { to: '/',           icon: '📊', label: 'Dashboard',  exact: true },
-  { to: '/routes',     icon: '🗺️', label: 'Routes' },
-  { to: '/vehicles',   icon: '🚌', label: 'Vehicles' },
-  { to: '/schedules',  icon: '🕐', label: 'Schedules' },
-  { to: '/passengers', icon: '👤', label: 'Passengers' },
-  { to: '/bookings',   icon: '🎫', label: 'Bookings' },
-  { to: '/staff',      icon: '👷', label: 'Staff' },
-  { to: '/audit',      icon: '📋', label: 'Audit Log' },
+  { to: '/',           icon: <LayoutDashboard size={18}/>, label: 'Dashboard',  exact: true },
+  { to: '/routes',     icon: <Map size={18}/>,             label: 'Routes' },
+  { to: '/vehicles',   icon: <Bus size={18}/>,             label: 'Vehicles' },
+  { to: '/schedules',  icon: <Clock size={18}/>,           label: 'Schedules' },
+  { to: '/passengers', icon: <Users size={18}/>,           label: 'Passengers' },
+  { to: '/bookings',   icon: <Ticket size={18}/>,          label: 'Bookings' },
+  { to: '/staff',      icon: <HardHat size={18}/>,         label: 'Staff' },
+  { to: '/audit',      icon: <ClipboardList size={18}/>,   label: 'Audit Log' },
 ];
 
 export default function Layout() {
@@ -25,8 +29,12 @@ export default function Layout() {
       {/* Header */}
       <header style={{ gridColumn: '1/-1', background: 'var(--surface)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 1.5rem', boxShadow: 'var(--sh1)', zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button onClick={() => setCollapsed(c => !c)} style={{ background: 'none', border: 'none', fontSize: '1.1rem', color: 'var(--text2)', padding: '4px 6px', borderRadius: '6px', cursor: 'pointer' }}>☰</button>
-          <div style={{ width: '30px', height: '30px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.9rem', boxShadow: '0 2px 6px rgba(37,99,235,.3)' }}>🚌</div>
+          <button onClick={() => setCollapsed(c => !c)} style={{ background: 'none', border: 'none', color: 'var(--text2)', padding: '4px 6px', borderRadius: '6px', cursor: 'pointer', display:'flex', alignItems:'center' }}>
+            <Menu size={20}/>
+          </button>
+          <div style={{ width: '30px', height: '30px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(37,99,235,.3)' }}>
+            <BusIcon size={16} color="#fff"/>
+          </div>
           {!collapsed && <span style={{ fontWeight: 800, fontSize: '1.05rem' }}>Transit<span style={{ color: 'var(--accent)' }}>DB</span></span>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -43,7 +51,9 @@ export default function Layout() {
               <div style={{ fontSize: '.65rem', color: 'var(--text2)' }}><span className={`chip ${user?.role}`}>{user?.role}</span></div>
             </div>
           </div>
-          <button className="btn sm danger" onClick={handleLogout}>↩ Logout</button>
+          <button className="btn sm danger" onClick={handleLogout} style={{display:'flex', alignItems:'center', gap:'5px'}}>
+            <LogOut size={14}/> Logout
+          </button>
         </div>
       </header>
 
@@ -62,7 +72,7 @@ export default function Layout() {
               justifyContent: collapsed ? 'center' : 'flex-start',
               textDecoration: 'none',
             })}>
-            <span style={{ fontSize: collapsed ? '1.1rem' : '.95rem', flexShrink: 0 }}>{n.icon}</span>
+            <span style={{ flexShrink: 0 }}>{n.icon}</span>
             {!collapsed && <span>{n.label}</span>}
           </NavLink>
         ))}
