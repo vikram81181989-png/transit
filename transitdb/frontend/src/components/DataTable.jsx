@@ -1,8 +1,11 @@
+import PropTypes from 'prop-types';
+import { Pencil, Trash2, Inbox } from 'lucide-react';
+
 export default function DataTable({ columns, rows, onEdit, onDelete, canEdit, canDelete }) {
   if (!rows?.length) {
     return (
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: '3rem', textAlign: 'center', boxShadow: 'var(--sh2)' }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: '.75rem' }}>📭</div>
+        <div style={{ marginBottom: '.75rem', color: 'var(--text3)' }}><Inbox size={40}/></div>
         <div style={{ fontSize: '.88rem', fontWeight: 600, color: 'var(--text2)' }}>No records found</div>
       </div>
     );
@@ -42,8 +45,8 @@ export default function DataTable({ columns, rows, onEdit, onDelete, canEdit, ca
                 })}
                 <td style={{ padding: '10px 14px' }}>
                   <div style={{ display: 'flex', gap: '5px' }}>
-                    {canEdit   && <button className="btn sm" onClick={() => onEdit(row)}   style={{ fontSize: '.7rem', padding: '3px 9px' }}>✏️ Edit</button>}
-                    {canDelete && <button className="btn sm danger" onClick={() => onDelete(row)} style={{ fontSize: '.7rem', padding: '3px 9px' }}>🗑</button>}
+                    {canEdit   && <button className="btn sm" onClick={() => onEdit(row)} style={{ fontSize: '.7rem', padding: '3px 9px', display:'flex', alignItems:'center', gap:'4px' }}><Pencil size={11}/> Edit</button>}
+                    {canDelete && <button className="btn sm danger" onClick={() => onDelete(row)} style={{ fontSize: '.7rem', padding: '3px 9px', display:'flex', alignItems:'center' }}><Trash2 size={11}/></button>}
                   </div>
                 </td>
               </tr>
@@ -54,3 +57,12 @@ export default function DataTable({ columns, rows, onEdit, onDelete, canEdit, ca
     </div>
   );
 }
+
+DataTable.propTypes = {
+  columns:   PropTypes.arrayOf(PropTypes.object).isRequired,
+  rows:      PropTypes.arrayOf(PropTypes.object).isRequired,
+  onEdit:    PropTypes.func.isRequired,
+  onDelete:  PropTypes.func.isRequired,
+  canEdit:   PropTypes.bool,
+  canDelete: PropTypes.bool,
+};
