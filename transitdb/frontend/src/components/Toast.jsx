@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
 
 let _push = null;
 
@@ -6,6 +7,12 @@ export function useToast() {
   const push = useCallback((msg, type = 'info') => { _push?.(msg, type); }, []);
   return push;
 }
+
+const TOAST_ICONS = {
+  ok:   <CheckCircle size={15} color="var(--green)"/>,
+  err:  <XCircle    size={15} color="var(--red)"/>,
+  info: <Info       size={15} color="var(--accent)"/>,
+};
 
 export default function ToastContainer() {
   const [toasts, setToasts] = useState([]);
@@ -30,7 +37,7 @@ export default function ToastContainer() {
           boxShadow: 'var(--sh3)', fontSize: '.82rem', fontWeight: 500, maxWidth: '320px',
           animation: 'fadeUp .3s ease-out',
         }}>
-          <span>{t.type === 'ok' ? '✅' : t.type === 'err' ? '❌' : 'ℹ️'}</span>
+          <span style={{ flexShrink: 0, marginTop: '1px' }}>{TOAST_ICONS[t.type] || TOAST_ICONS.info}</span>
           <span style={{ color: 'var(--text)' }}>{t.msg}</span>
         </div>
       ))}

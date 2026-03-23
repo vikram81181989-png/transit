@@ -1,3 +1,6 @@
+import PropTypes from 'prop-types';
+import { X } from 'lucide-react';
+
 export default function Modal({ open, onClose, title, children, footer }) {
   if (!open) return null;
   return (
@@ -6,7 +9,9 @@ export default function Modal({ open, onClose, title, children, footer }) {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', width: '500px', maxWidth: '94vw', boxShadow: 'var(--sh3)', overflow: 'hidden', animation: 'fadeUp .2s ease-out' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontWeight: 800, fontSize: '1rem' }}>{title}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: '1.1rem', cursor: 'pointer', padding: '3px 6px', borderRadius: '5px' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', padding: '3px 6px', borderRadius: '5px', display: 'flex', alignItems: 'center' }}>
+            <X size={16}/>
+          </button>
         </div>
         <div style={{ padding: '18px 20px', maxHeight: '65vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {children}
@@ -20,3 +25,11 @@ export default function Modal({ open, onClose, title, children, footer }) {
     </div>
   );
 }
+
+Modal.propTypes = {
+  open:     PropTypes.bool.isRequired,
+  onClose:  PropTypes.func.isRequired,
+  title:    PropTypes.string,
+  children: PropTypes.node,
+  footer:   PropTypes.node,
+};
