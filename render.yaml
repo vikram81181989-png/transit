@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: transit
+    plan: free
+    runtime: node
+    buildCommand: cd transitdb/backend && npm ci && npm run build
+    startCommand: cd transitdb/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
