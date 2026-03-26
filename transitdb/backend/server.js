@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const pool = require('./config/db');
 
 const app = express();
 
@@ -35,6 +36,20 @@ app.use((req, _res, next) => {
   next();
 });
 
+// ── DB readiness guard for API routes ──
+// Note: req.path is relative to the '/api' mount point, so '/api/health' → '/health'
+app.use('/api', (req, res, next) => {
+  // Allow health check through regardless of DB state
+  if (req.path === '/health') return next();
+  if (!pool.isReady()) {
+    return res.status(503).json({
+      success: false,
+      message: 'Service temporarily unavailable — database not yet connected'
+    });
+  }
+  next();
+});
+
 // ── Routes ──
 const authRouter = require('./routes/auth');
 const dashRouter = require('./routes/dashboard');
@@ -57,9 +72,14 @@ app.use('/api/bookings', bookingsRouter);
 app.use('/api/staff', staffRouter);
 
 // ── Health check ──
-app.get('/api/health', (_req, res) =>
-  res.json({ status: 'ok', timestamp: new Date() })
-);
+app.get('/api/health', (_req, res) => {
+  const dbReady = pool.isReady();
+  res.status(dbReady ? 200 : 503).json({
+    status: dbReady ? 'ok' : 'degraded',
+    db: dbReady ? 'connected' : 'unavailable',
+    timestamp: new Date()
+  });
+});
 
 // ── 404 ──
 app.use((_req, res) =>
