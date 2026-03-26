@@ -4,11 +4,14 @@
  */
 
 /**
- * Strip HTML/script tags and trim whitespace to prevent XSS.
+ * Strip control characters and enforce safe text input to reduce injection risk.
+ * Note: SQL injection is prevented by parameterized queries (pool.execute with ?).
+ * React automatically escapes rendered output, providing frontend XSS protection.
  */
 function sanitize(value) {
   if (typeof value !== 'string') return value;
-  return value.replace(/<[^>]*>/g, '').trim();
+  // Remove null bytes and control characters; trim whitespace
+  return value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim();
 }
 
 /**

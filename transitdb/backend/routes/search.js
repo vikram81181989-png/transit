@@ -1,15 +1,17 @@
 // routes/search.js — public (authenticated) route + schedule search endpoints
-const express = require('express');
-const pool    = require('../config/db');
-const { auth } = require('../middleware/auth');
+const express    = require('express');
+const { rateLimit } = require('express-rate-limit');
+const pool       = require('../config/db');
+const { auth }   = require('../middleware/auth');
 
 const router = express.Router();
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
 
 /**
  * GET /api/search/routes?source=X&destination=Y
  * Search available routes by source and/or destination (partial, case-insensitive).
  */
-router.get('/routes', auth, async (req, res) => {
+router.get('/routes', limiter, auth, async (req, res) => {
   try {
     const { source, destination } = req.query;
     let sql = "SELECT * FROM routes WHERE status != 'cancelled'";
@@ -36,7 +38,7 @@ router.get('/routes', auth, async (req, res) => {
  * GET /api/search/schedules?route_id=X&min_fare=Y&max_fare=Z
  * Get schedules (with availability) for a route, with optional fare filters.
  */
-router.get('/schedules', auth, async (req, res) => {
+router.get('/schedules', limiter, auth, async (req, res) => {
   try {
     const { route_id, min_fare, max_fare } = req.query;
 
@@ -77,7 +79,7 @@ router.get('/schedules', auth, async (req, res) => {
  * GET /api/search/seats/:schedule_id
  * Returns taken seat numbers and vehicle capacity for a given schedule.
  */
-router.get('/seats/:schedule_id', auth, async (req, res) => {
+router.get('/seats/:schedule_id', limiter, auth, async (req, res) => {
   try {
     const scheduleId = Number(req.params.schedule_id);
 

@@ -1,16 +1,18 @@
 // routes/userProfile.js — user profile management endpoints
-const express  = require('express');
-const pool     = require('../config/db');
-const { auth } = require('../middleware/auth');
+const express    = require('express');
+const { rateLimit } = require('express-rate-limit');
+const pool       = require('../config/db');
+const { auth }   = require('../middleware/auth');
 const { sanitize, validatePhone } = require('../middleware/validate');
 
 const router = express.Router();
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
 
 /**
  * GET /api/user/profile
  * Returns the authenticated user's account and linked passenger info.
  */
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', limiter, auth, async (req, res) => {
   try {
     const [userRows] = await pool.execute(
       'SELECT user_id, name, email, role, created_at FROM users WHERE user_id = ?',
@@ -39,7 +41,7 @@ router.get('/profile', auth, async (req, res) => {
  * PUT /api/user/profile
  * Update the user's display name and linked passenger details (phone, city).
  */
-router.put('/profile', auth, async (req, res) => {
+router.put('/profile', limiter, auth, async (req, res) => {
   const { name, phone, city } = req.body;
 
   if (!name || !String(name).trim()) {

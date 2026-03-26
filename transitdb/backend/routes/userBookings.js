@@ -1,16 +1,21 @@
 // routes/userBookings.js — user-facing booking management endpoints
-const express  = require('express');
-const pool     = require('../config/db');
-const { auth } = require('../middleware/auth');
+const express   = require('express');
+const crypto    = require('crypto');
+const { rateLimit } = require('express-rate-limit');
+const pool      = require('../config/db');
+const { auth }  = require('../middleware/auth');
 const { sanitize, validateEmail, validatePhone, requireFields } = require('../middleware/validate');
-const logAudit = require('../middleware/audit');
+const logAudit  = require('../middleware/audit');
 
 const router = express.Router();
+// Stricter limit for booking creation to prevent spam
+const bookingLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, message: 'Too many booking requests. Please wait before trying again.' });
+const generalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
 
-/** Generates a human-readable unique ticket ID. */
+/** Generates a unique ticket ID using cryptographically secure random bytes. */
 function generateTicketId(bookingId) {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  const rand = String(Math.floor(Math.random() * 9000) + 1000);
+  const rand = crypto.randomInt(1000, 9999);
   return `TKT-${date}-${bookingId}-${rand}`;
 }
 
@@ -19,7 +24,7 @@ function generateTicketId(bookingId) {
  * Create a new ticket booking with transaction support.
  * Decrements seats_left and generates a unique ticket_id.
  */
-router.post('/book', auth, async (req, res) => {
+router.post('/book', bookingLimiter, auth, async (req, res) => {
   const {
     schedule_id,
     seat_no,
@@ -166,7 +171,7 @@ router.post('/book', auth, async (req, res) => {
  * GET /api/user/my-bookings
  * Returns all bookings belonging to the authenticated user.
  */
-router.get('/my-bookings', auth, async (req, res) => {
+router.get('/my-bookings', generalLimiter, auth, async (req, res) => {
   try {
     const [rows] = await pool.execute(
       `SELECT b.booking_id, b.ticket_id, b.seat_no, b.status, b.amount, b.booked_at,
@@ -193,7 +198,7 @@ router.get('/my-bookings', auth, async (req, res) => {
  * PUT /api/user/bookings/:id/cancel
  * Cancel a booking owned by the current user. Restores seats_left.
  */
-router.put('/bookings/:id/cancel', auth, async (req, res) => {
+router.put('/bookings/:id/cancel', generalLimiter, auth, async (req, res) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
