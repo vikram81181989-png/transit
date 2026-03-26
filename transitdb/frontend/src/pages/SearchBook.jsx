@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Search, MapPin, Bus, Clock, IndianRupee, ArrowRight, CheckCircle, Loader, RotateCcw, Ticket } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -76,6 +77,10 @@ function StepSearch({ onResults }) {
     </div>
   );
 }
+
+StepSearch.propTypes = {
+  onResults: PropTypes.func.isRequired,
+};
 
 // ── Step 2: Route & schedule selection ────────────────────────────────────────
 function StepSchedules({ routes, filters, onSelectSchedule }) {
@@ -198,6 +203,22 @@ function StepSchedules({ routes, filters, onSelectSchedule }) {
   );
 }
 
+StepSchedules.propTypes = {
+  routes: PropTypes.arrayOf(PropTypes.shape({
+    route_id:     PropTypes.number.isRequired,
+    source:       PropTypes.string,
+    destination:  PropTypes.string,
+    distance_km:  PropTypes.number,
+    duration_hrs: PropTypes.number,
+    status:       PropTypes.string,
+  })).isRequired,
+  filters:          PropTypes.shape({
+    source:      PropTypes.string,
+    destination: PropTypes.string,
+  }),
+  onSelectSchedule: PropTypes.func.isRequired,
+};
+
 // ── Step 3: Seat selection ─────────────────────────────────────────────────────
 function StepSeat({ schedule, route, onSelectSeat }) {
   const [seatData, setSeatData] = useState(null);
@@ -243,6 +264,20 @@ function StepSeat({ schedule, route, onSelectSeat }) {
     </div>
   );
 }
+
+StepSeat.propTypes = {
+  schedule: PropTypes.shape({
+    schedule_id: PropTypes.number.isRequired,
+    departure:   PropTypes.string,
+    arrival:     PropTypes.string,
+    fare:        PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  }).isRequired,
+  route: PropTypes.shape({
+    source:      PropTypes.string,
+    destination: PropTypes.string,
+  }).isRequired,
+  onSelectSeat: PropTypes.func.isRequired,
+};
 
 // ── Step 4: Passenger details form ────────────────────────────────────────────
 function StepPassenger({ schedule, route, seat, user, onBook }) {
@@ -339,6 +374,23 @@ function StepPassenger({ schedule, route, seat, user, onBook }) {
   );
 }
 
+StepPassenger.propTypes = {
+  schedule: PropTypes.shape({
+    schedule_id: PropTypes.number.isRequired,
+    fare:        PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  }).isRequired,
+  route: PropTypes.shape({
+    source:      PropTypes.string,
+    destination: PropTypes.string,
+  }).isRequired,
+  seat:   PropTypes.string.isRequired,
+  user:   PropTypes.shape({
+    name:  PropTypes.string,
+    email: PropTypes.string,
+  }),
+  onBook: PropTypes.func.isRequired,
+};
+
 // ── Step 5: Booking confirmation ───────────────────────────────────────────────
 function StepConfirmation({ booking, onBookAnother }) {
   return (
@@ -392,6 +444,24 @@ function StepConfirmation({ booking, onBookAnother }) {
     </div>
   );
 }
+
+StepConfirmation.propTypes = {
+  booking: PropTypes.shape({
+    ticket_id:      PropTypes.string,
+    booking_id:     PropTypes.number,
+    passenger_name: PropTypes.string,
+    phone:          PropTypes.string,
+    source:         PropTypes.string,
+    destination:    PropTypes.string,
+    departure:      PropTypes.string,
+    arrival:        PropTypes.string,
+    vehicle_no:     PropTypes.string,
+    vehicle_type:   PropTypes.string,
+    seat_no:        PropTypes.string,
+    amount:         PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  }).isRequired,
+  onBookAnother: PropTypes.func.isRequired,
+};
 
 // ── Main SearchBook page (wizard) ─────────────────────────────────────────────
 export default function SearchBook() {
