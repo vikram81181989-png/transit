@@ -4,6 +4,7 @@
   "description": "TransitDB Backend API — Express + MySQL",
   "main": "server.js",
   "scripts": {
+    "build": "echo 'No build step required for Node.js backend'",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
