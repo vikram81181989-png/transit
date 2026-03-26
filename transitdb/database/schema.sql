@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS routes (
   duration_hrs  DECIMAL(5,2) NOT NULL,
   status        ENUM('active','delayed','cancelled') NOT NULL DEFAULT 'active',
   created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_routes_source (source),
+  INDEX idx_routes_destination (destination),
+  INDEX idx_routes_status (status)
 );
 
 -- Vehicles
@@ -58,16 +61,19 @@ CREATE TABLE IF NOT EXISTS schedules (
 -- Passengers
 CREATE TABLE IF NOT EXISTS passengers (
   passenger_id  INT AUTO_INCREMENT PRIMARY KEY,
+  user_id       INT NULL,
   name          VARCHAR(100) NOT NULL,
   phone         VARCHAR(15) NOT NULL UNIQUE,
   email         VARCHAR(150),
   city          VARCHAR(80) NOT NULL,
-  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_passengers_user_id (user_id)
 );
 
 -- Bookings
 CREATE TABLE IF NOT EXISTS bookings (
   booking_id    INT AUTO_INCREMENT PRIMARY KEY,
+  ticket_id     VARCHAR(30) NULL UNIQUE,
   passenger_id  INT NOT NULL,
   schedule_id   INT NOT NULL,
   seat_no       VARCHAR(10) NOT NULL,
@@ -76,7 +82,10 @@ CREATE TABLE IF NOT EXISTS bookings (
   booked_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (passenger_id) REFERENCES passengers(passenger_id) ON DELETE CASCADE,
-  FOREIGN KEY (schedule_id)  REFERENCES schedules(schedule_id)  ON DELETE CASCADE
+  FOREIGN KEY (schedule_id)  REFERENCES schedules(schedule_id)  ON DELETE CASCADE,
+  INDEX idx_bookings_status (status),
+  INDEX idx_bookings_schedule (schedule_id),
+  INDEX idx_bookings_passenger (passenger_id)
 );
 
 -- Staff
