@@ -10,6 +10,7 @@ export default function MyBookings() {
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState('all');
   const [cancelling, setCancelling] = useState(null);
+  const [confirmId, setConfirmId]   = useState(null);
   const toast = useToast();
 
   const load = useCallback(async () => {
@@ -24,11 +25,11 @@ export default function MyBookings() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleCancel = async (booking) => {
-    if (!window.confirm(`Cancel booking ${booking.ticket_id || `#${booking.booking_id}`}? This will release your seat.`)) return;
-    setCancelling(booking.booking_id);
+  const handleCancelConfirmed = async (bookingId) => {
+    setConfirmId(null);
+    setCancelling(bookingId);
     try {
-      await api.put(`/user/bookings/${booking.booking_id}/cancel`);
+      await api.put(`/user/bookings/${bookingId}/cancel`);
       toast('Booking cancelled. Your seat has been released.', 'ok');
       load();
     } catch (err) {
@@ -108,14 +109,32 @@ export default function MyBookings() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span className={`chip ${b.status}`}>{b.status}</span>
                   {(b.status === 'confirmed' || b.status === 'pending') && (
-                    <button
-                      className="btn sm danger"
-                      disabled={cancelling === b.booking_id}
-                      onClick={() => handleCancel(b)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '.72rem' }}>
-                      {cancelling === b.booking_id ? <RefreshCw size={11}/> : <XCircle size={11}/>}
-                      {cancelling === b.booking_id ? 'Cancelling…' : 'Cancel'}
-                    </button>
+                    confirmId === b.booking_id ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '.72rem', color: 'var(--text2)' }}>Confirm cancel?</span>
+                        <button
+                          className="btn sm danger"
+                          onClick={() => handleCancelConfirmed(b.booking_id)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '.72rem' }}>
+                          Yes
+                        </button>
+                        <button
+                          className="btn sm"
+                          onClick={() => setConfirmId(null)}
+                          style={{ fontSize: '.72rem' }}>
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn sm danger"
+                        disabled={cancelling === b.booking_id}
+                        onClick={() => setConfirmId(b.booking_id)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '.72rem' }}>
+                        {cancelling === b.booking_id ? <RefreshCw size={11}/> : <XCircle size={11}/>}
+                        {cancelling === b.booking_id ? 'Cancelling…' : 'Cancel'}
+                      </button>
+                    )
                   )}
                 </div>
               </div>
