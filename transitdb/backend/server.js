@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('./middleware/rateLimit');
 
 const app = express();
 
@@ -38,6 +39,9 @@ app.use((req, _res, next) => {
 // ── Routes ──
 const authRouter = require('./routes/auth');
 const dashRouter = require('./routes/dashboard');
+const searchRouter = require('./routes/search');
+const userBookingsRouter = require('./routes/userBookings');
+const userProfileRouter = require('./routes/userProfile');
 const {
   routesRouter,
   vehiclesRouter,
@@ -47,8 +51,14 @@ const {
   staffRouter
 } = require('./routes/resources');
 
-app.use('/api/auth', authRouter);
+// Apply strict rate limit on auth endpoints (20 attempts per 15 minutes)
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many login attempts. Please wait and try again.' });
+
+app.use('/api/auth', authLimiter, authRouter);
 app.use('/api/dashboard', dashRouter);
+app.use('/api/search', searchRouter);
+app.use('/api/user', userBookingsRouter);
+app.use('/api/user', userProfileRouter);
 app.use('/api/routes', routesRouter);
 app.use('/api/vehicles', vehiclesRouter);
 app.use('/api/schedules', schedulesRouter);

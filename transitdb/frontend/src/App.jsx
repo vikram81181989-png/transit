@@ -8,6 +8,9 @@ import Register  from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import TablePage from './pages/TablePage';
 import AuditPage from './pages/AuditPage';
+import SearchBook from './pages/SearchBook';
+import MyBookings from './pages/MyBookings';
+import Profile    from './pages/Profile';
 import Layout    from './components/Layout';
 
 function PrivateRoute({ children }) {
@@ -39,6 +42,9 @@ export default function App() {
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index           element={<Dashboard />} />
+            <Route path="book"       element={<SearchBook />} />
+            <Route path="my-bookings" element={<MyBookings />} />
+            <Route path="profile"    element={<Profile />} />
             <Route path="routes"     element={<TablePage table="routes" />} />
             <Route path="vehicles"   element={<TablePage table="vehicles" />} />
             <Route path="schedules"  element={<TablePage table="schedules" />} />
