@@ -35,6 +35,9 @@ app.use((req, _res, next) => {
   next();
 });
 
+// ── Database ──
+const db = require('./config/db');
+
 // ── Routes ──
 const authRouter = require('./routes/auth');
 const dashRouter = require('./routes/dashboard');
@@ -57,9 +60,14 @@ app.use('/api/bookings', bookingsRouter);
 app.use('/api/staff', staffRouter);
 
 // ── Health check ──
-app.get('/api/health', (_req, res) =>
-  res.json({ status: 'ok', timestamp: new Date() })
-);
+app.get('/api/health', (_req, res) => {
+  const dbStatus = db.isReady();
+  res.status(dbStatus ? 200 : 503).json({
+    status: dbStatus ? 'ok' : 'degraded',
+    db: dbStatus ? 'connected' : 'unavailable',
+    timestamp: new Date()
+  });
+});
 
 // ── 404 ──
 app.use((_req, res) =>
