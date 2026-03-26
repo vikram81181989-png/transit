@@ -3,10 +3,17 @@ import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 import {
   LayoutDashboard, Map, Bus, Clock, Users,
-  Ticket, HardHat, ClipboardList, LogOut, Menu, Bus as BusIcon
+  Ticket, HardHat, ClipboardList, LogOut, Menu, Bus as BusIcon,
+  Search, BookOpen, UserCircle
 } from 'lucide-react';
 
-const NAV = [
+const NAV_USER = [
+  { to: '/book',        icon: <Search size={18}/>,       label: 'Book Ticket' },
+  { to: '/my-bookings', icon: <BookOpen size={18}/>,     label: 'My Bookings' },
+  { to: '/profile',     icon: <UserCircle size={18}/>,   label: 'My Profile' },
+];
+
+const NAV_ADMIN = [
   { to: '/',           icon: <LayoutDashboard size={18}/>, label: 'Dashboard',  exact: true },
   { to: '/routes',     icon: <Map size={18}/>,             label: 'Routes' },
   { to: '/vehicles',   icon: <Bus size={18}/>,             label: 'Vehicles' },
@@ -59,8 +66,29 @@ export default function Layout() {
 
       {/* Sidebar */}
       <aside style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)', overflowY: 'auto', padding: '1rem .75rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        {!collapsed && <div style={{ fontSize: '.62rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text3)', padding: '0 6px', marginBottom: '.4rem' }}>Navigation</div>}
-        {NAV.map(n => (
+        {/* User section */}
+        {!collapsed && <div style={{ fontSize: '.62rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text3)', padding: '0 6px', marginBottom: '.4rem' }}>My Account</div>}
+        {NAV_USER.map(n => (
+          <NavLink key={n.to} to={n.to} end={n.exact}
+            style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: collapsed ? '10px' : '9px 10px',
+              borderRadius: 'var(--r2)', transition: 'all .15s',
+              fontSize: '.83rem', fontWeight: 600,
+              background: isActive ? 'var(--accent-lite)' : 'transparent',
+              color: isActive ? 'var(--accent)' : 'var(--text2)',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              textDecoration: 'none',
+            })}>
+            <span style={{ flexShrink: 0 }}>{n.icon}</span>
+            {!collapsed && <span>{n.label}</span>}
+          </NavLink>
+        ))}
+
+        {/* Admin section */}
+        {!collapsed && <div style={{ fontSize: '.62rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text3)', padding: '0 6px', marginTop: '.75rem', marginBottom: '.4rem' }}>Management</div>}
+        {collapsed && <div style={{ borderTop: '1px solid var(--border)', margin: '.5rem 0' }}/>}
+        {NAV_ADMIN.map(n => (
           <NavLink key={n.to} to={n.to} end={n.exact}
             style={({ isActive }) => ({
               display: 'flex', alignItems: 'center', gap: '8px',
